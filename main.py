@@ -22,10 +22,10 @@ base_urls = {
 
 print("Hi")
 
-if not os.path.isfile("settings.json"):
+if not os.path.isfile("data/settings.json"):
 	raise SystemExit("no settings file")
 
-with open("settings.json", "r") as settings_data_f:
+with open("data/settings.json", "r") as settings_data_f:
 	settings = json.load(settings_data_f)
 	#settings_data_f.close()
 
@@ -38,10 +38,10 @@ if not os.path.exists(settings["path_output"]):
 print("path_output:", settings["path_output"])
 
 ### USE THIS: http://gaming.stackexchange.com/a/364879/292725 ###
-if not os.path.isfile("input.json"):
+if not os.path.isfile("data/input.json"):
 	raise SystemExit("no input file")
 
-with open("input.json", "r") as input_data_f:
+with open("data/input.json", "r") as input_data_f:
 	input_data = json.load(input_data_f)
 	#input_data_f.close()
 
@@ -49,28 +49,40 @@ print(type(input_data))
 
 
 for appid in input_data:
-	print("App ID:", appid)
+	#print("App ID:", appid)
 	for key, value in base_urls.items():
 		tmp_url = base_url + str(appid) + "/" + value
-		tmp_file = settings["path_output"] + "\\" + str(appid) + "_" + value
+		tmp_name = str(appid) + "_" + value
+		tmp_file = settings["path_output"] + "\\" + tmp_name
 		tmp_exist = os.path.isfile(tmp_file)
 		#print(key, '->', value)
-		print(tmp_exist, "\"" + tmp_file + "\"")
 		if not tmp_exist:
+			tmp_status = "Not present, downloading..."
 			#print("File not exist, start downloading...")
 			try:
 				with urllib.request.urlopen(tmp_url) as f_web:
 					f_out = f_web.read() #.decode('utf-8')
 					with open(tmp_file, "wb") as fcont:
 						fcont.write(f_out)
+					tmp_status = "Downloaded successfully"
+					print("File \"" + tmp_name + "\" -", tmp_status)
 			except HTTPError as e:
 				# "e" can be treated as a http.client.HTTPResponse object
-				print('HTTPError:', e.code)
+				if e.code == 404:
+					tmp_status = "Not presented on server, skipping"
+				else:
+					tmp_status = "HTTPError:" + e.code + ", skipping"
+				print("File \"" + tmp_name + "\" -", tmp_status)
 			except URLError as e:
 				# https://stackoverflow.com/a/29538780/8175291
-				print('URLError:', e.reason)
+				tmp_status = "URLError:" + e.reason + ", skipping"
+				print("File \"" + tmp_name + "\" -", tmp_status)
 			#else:
-			#	print("Download OK")
+			#	tmp_status = "Downloaded successfully"
+			#	print("File \"" + tmp_name + "\" -", tmp_status)
+		else:
+			tmp_status = "Presented locally, skipping"
+			print("File \"" + tmp_name + "\" -", tmp_status)
 	#raise SystemExit("ToDo")
 
 
