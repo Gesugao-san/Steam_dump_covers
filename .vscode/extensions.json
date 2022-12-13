@@ -1,5 +1,7 @@
 {
-    "recommendations": [
-		"Gesugao-san.general-purpose-extension-pack",
+	"recommendations": [
+		"gesugao-san.general-purpose-extension-pack",
+		"ms-python.python",
+		"donjayamanne.python-extension-pack"
 	]
 }
