@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 
 
-import json
-import urllib.request
 from urllib.error import URLError, HTTPError
+import json
 import os
+import urllib.request
+import vdf
+from steam.steamid import SteamID
 
 
 base_url = "https://steamcdn-a.akamaihd.net/steam/apps/"
@@ -25,27 +27,61 @@ print("Hi")
 if not os.path.isfile("data/settings.json"):
 	raise SystemExit("no settings file")
 
-with open("data/settings.json", "r") as settings_data_f:
+with open("data/settings.json", "r", encoding='utf-8') as settings_data_f:
 	settings = json.load(settings_data_f)
 	#settings_data_f.close()
+
+if not "path_steam_core" in settings:
+	raise SystemExit("no \"path_steam_core\" param in settings file")
 
 if not "path_output" in settings:
 	raise SystemExit("no \"path_output\" param in settings file")
 
-if not os.path.exists(settings["path_output"]):
-	raise SystemExit("no output folder founded (check settings file)")
+if not os.path.exists(settings["path_steam_core"]):
+	raise SystemExit("no path_steam_core folder founded (check settings file)")
 
+if not os.path.exists(settings["path_output"]):
+	raise SystemExit("no path_output folder founded (check settings file)")
+
+print("path_output:", settings["path_steam_core"])
 print("path_output:", settings["path_output"])
+
+with open(settings["path_steam_core"] + "/config/loginusers.vdf", "r", encoding='utf-8') as vdf_text:
+	loginusers = vdf.parse(vdf_text)
+	#input_data_f.close()
+
+if not "users" in loginusers:
+	raise SystemExit("no \"loginusers\" param in \"<Steam>/config/loginusers.vdf\" file")
+
+if len(loginusers["users"].keys()) != 1:
+	raise SystemExit("Wrong \"users\" length, check file \"<Steam>/config/loginusers.vdf\"")
+
+#print("loginusers:", vdf.dumps(loginusers, pretty=True))
+user_SteamID = SteamID(list(loginusers["users"].keys())[0])
+print("SteamID:", user_SteamID.as_64, user_SteamID.account_id)
+
+tmp_path = settings["path_steam_core"] + "/userdata/" + str(user_SteamID.account_id) + "/config/localconfig.vdf"
+print("tmp_path:", tmp_path)
+with open(tmp_path, "r", encoding='utf-8') as vdf_text:
+	localconfig = vdf.parse(vdf_text)
+	#input_data_f.close()
+
+#print("localconfig:", localconfig)
+avatar_hash = localconfig["UserLocalConfigStore"]["friends"][str(user_SteamID.account_id)]["avatar"]
+print("localconfig (avatar):", avatar_hash)
+print("https://avatars.akamai.steamstatic.com/" + avatar_hash + "_full.jpg")
+# "Steam\config\avatarcache"
+
 
 ### USE THIS: http://gaming.stackexchange.com/a/364879/292725 ###
 if not os.path.isfile("data/input.json"):
 	raise SystemExit("no input file")
 
-with open("data/input.json", "r") as input_data_f:
+with open("data/input.json", "r", encoding='utf-8') as input_data_f:
 	input_data = json.load(input_data_f)
 	#input_data_f.close()
 
-print(type(input_data))
+#print(type(input_data))
 
 
 for appid in input_data:

@@ -4,6 +4,12 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "Install",
+			"type": "shell",
+			"command": "py -3 --version && python.exe -m pip install --upgrade pip && pip install -U -r requirements.txt",
+			"problemMatcher": [],
+		},
+		{
 			"label": "Run",
 			"type": "shell",
 			"command": "py -3 --version && python \"main.py\"",
