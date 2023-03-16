@@ -8,6 +8,7 @@ import os
 import urllib.request
 import vdf
 from steam.steamid import SteamID
+from datetime import datetime
 
 
 base_url = "https://steamcdn-a.akamaihd.net/steam/apps/"
@@ -94,7 +95,7 @@ for key, value in base_urls.items():
 	#print('key', key, 'value', value, 'check_len', check_len)
 	if just_len < check_len:
 		just_len = check_len
-just_len += 2
+just_len -= 2
 print('justify len:', just_len)
 
 
@@ -104,13 +105,17 @@ for appid in input_data:
 		tmp_name = str(appid) + "_" + value
 		tmp_file = settings["path_output"] + "\\" + tmp_name
 		tmp_exist = os.path.isfile(tmp_file)
-		tmp_status1 = str(appid).ljust(longest_gameid + 1) + value.ljust(longest_base_url)  #'"' + tmp_name + '":'
+		tmp_status1 = str(appid).ljust(longest_gameid + 1) + value.split('.')[0].ljust(longest_base_url - 3)  #'"' + tmp_name + '":'
 		print(tmp_status1.ljust(just_len), end='')
 		#print(key, '->', value)
-		if not tmp_exist:
-			tmp_status2 = "↓… " #"DOWNLOAD… " #"💾" #"Downloading... "
+		if tmp_exist:
+			tmp_status2 = "OK"
+			tmp_status3 = "409  Already found" #exists
+			print(tmp_status2.ljust(4), tmp_status3)
+		else:
+			#tmp_status2 = "↓… " #"DOWNLOAD… " #"💾" #"Downloading... "
 			#print("File not exist, start downloading...")
-			print(tmp_status2, end='')
+			#print(tmp_status2, end='')
 			try:
 				with urllib.request.urlopen(tmp_url) as f_web:
 					f_out = f_web.read() #.decode('utf-8')
@@ -122,24 +127,26 @@ for appid in input_data:
 				# "e" can be treated as a http.client.HTTPResponse object
 				tmp_status2 = "ERR"
 				if e.code == 404:
-					tmp_status3 = "Not exists on Steam"
+					tmp_status3 = str(e.code) + "  " + str(e.reason) # remotely # on Steam
+				elif e.code == 429:
+					tmp_status3 = str(e.code) + "  " + str(e.reason)
+					print(tmp_status2.ljust(4), tmp_status3)
+					print(str(datetime.now()) + " Stoped bombing Steam.")
+					exit()
 				else:
-					tmp_status3 = "(HTTPError:" + e.code
+					tmp_status3 = "HTTPError:" + str(e.code)
 				print(tmp_status2.ljust(4), tmp_status3)
 			except URLError as e:
 				# https://stackoverflow.com/a/29538780/8175291
 				tmp_status2 = "ERR"
-				tmp_status3 = "URLError:" + e.reason
+				tmp_status3 = "URLError:" + str(e.reason)
 				print(tmp_status2.ljust(4), tmp_status3)
 			#else:
 			#	tmp_status2 = "Downloaded successfully"
 			#	print("File \"" + tmp_name + "\" -", tmp_status2)
-		else:
-			tmp_status2 = "OK"
-			tmp_status3 = "Already exists"
-			print(tmp_status2.ljust(7), tmp_status3)
 	#raise SystemExit("ToDo")
 
 
 print("Bye")
+exit()
 
