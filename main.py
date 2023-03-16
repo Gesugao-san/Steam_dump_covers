@@ -14,7 +14,7 @@ base_url = "https://steamcdn-a.akamaihd.net/steam/apps/"
 # Library Game...
 base_urls = {
 	"Header"            : "header.jpg",
-	#"Icon"              : "N\A.jpg",                 # https:    //stackoverflow.com/a/24693219/8175291
+	#"Icon"              : "N\A.jpg",         # https://stackoverflow.com/a/24693219/8175291
 	"Cover (1x)"        : "library_600x900.jpg",
 	#"Cover (2x)"        : "/library_600x900_2x.jpg", # not used
 	"Page BG"           : "library_hero.jpg",
@@ -84,41 +84,60 @@ with open("data/input.json", "r", encoding='utf-8') as input_data_f:
 #print(type(input_data))
 
 
+#print("App ID:", appid)
+longest_gameid = len(str(max(input_data))) #7 # 2290190, for example
+longest_base_url = 0
+just_len = 0  # justify
+for key, value in base_urls.items():
+	longest_base_url = len(value)
+	check_len = longest_base_url + longest_gameid
+	#print('key', key, 'value', value, 'check_len', check_len)
+	if just_len < check_len:
+		just_len = check_len
+just_len += 2
+print('justify len:', just_len)
+
+
 for appid in input_data:
-	#print("App ID:", appid)
 	for key, value in base_urls.items():
 		tmp_url = base_url + str(appid) + "/" + value
 		tmp_name = str(appid) + "_" + value
 		tmp_file = settings["path_output"] + "\\" + tmp_name
 		tmp_exist = os.path.isfile(tmp_file)
+		tmp_status1 = str(appid).ljust(longest_gameid + 1) + value.ljust(longest_base_url)  #'"' + tmp_name + '":'
+		print(tmp_status1.ljust(just_len), end='')
 		#print(key, '->', value)
 		if not tmp_exist:
-			tmp_status = "Not present, downloading..."
+			tmp_status2 = "↓… " #"DOWNLOAD… " #"💾" #"Downloading... "
 			#print("File not exist, start downloading...")
+			print(tmp_status2, end='')
 			try:
 				with urllib.request.urlopen(tmp_url) as f_web:
 					f_out = f_web.read() #.decode('utf-8')
 					with open(tmp_file, "wb") as fcont:
 						fcont.write(f_out)
-					tmp_status = "Downloaded successfully"
-					print("File \"" + tmp_name + "\" -", tmp_status)
+					tmp_status2 = "OK" #"Downloaded successfully"
+					print(tmp_status2)
 			except HTTPError as e:
 				# "e" can be treated as a http.client.HTTPResponse object
+				tmp_status2 = "ERR"
 				if e.code == 404:
-					tmp_status = "Not presented on server, skipping"
+					tmp_status3 = "Not exists on Steam"
 				else:
-					tmp_status = "HTTPError:" + e.code + ", skipping"
-				print("File \"" + tmp_name + "\" -", tmp_status)
+					tmp_status3 = "(HTTPError:" + e.code
+				print(tmp_status2.ljust(4), tmp_status3)
 			except URLError as e:
 				# https://stackoverflow.com/a/29538780/8175291
-				tmp_status = "URLError:" + e.reason + ", skipping"
-				print("File \"" + tmp_name + "\" -", tmp_status)
+				tmp_status2 = "ERR"
+				tmp_status3 = "URLError:" + e.reason
+				print(tmp_status2.ljust(4), tmp_status3)
 			#else:
-			#	tmp_status = "Downloaded successfully"
-			#	print("File \"" + tmp_name + "\" -", tmp_status)
+			#	tmp_status2 = "Downloaded successfully"
+			#	print("File \"" + tmp_name + "\" -", tmp_status2)
 		else:
-			tmp_status = "Presented locally, skipping"
-			print("File \"" + tmp_name + "\" -", tmp_status)
+			tmp_status2 = "OK"
+			tmp_status3 = "Already exists"
+			print(tmp_status2.ljust(7), tmp_status3)
 	#raise SystemExit("ToDo")
 
 
