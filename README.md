@@ -40,7 +40,12 @@
 
 ---
 
-> [Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis scelerisque aliquam nibh, sed accumsan ipsum malesuada a. Mauris a facilisis erat. ](https://lipsum.com/)
+> Custom app to download Steam games' covers.
+
+> Inspired / used:
+> http://reddit.com/r/steamgrid/comments/d8q0ff/
+> http://github.com/Zwork101/python-steamid
+> http://github.com/rossengeorgiev/vdf-parser
 
 ## Table of Contents
 

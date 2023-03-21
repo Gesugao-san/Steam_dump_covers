@@ -222,4 +222,5 @@ settings.json
 input.json
 output/*.jpg
 output/*.png
+data/presence_db_local.json
 
